@@ -1,10 +1,10 @@
 // Hiyoko Sodate - Game Engine
-const C = {W:480,H:720,BASE:28,SPD:280,MAX_LV:20,CHKN:15,
+const C = {W:480,H:720,BASE:30,SPD:280,MAX_LV:20,CHKN:12,
   FSPD:120,SI:1000,SI_MIN:280,ROT0:0.12,ROT_INC:0.018,
   FOODS:{rice:{e:'🍚',g:1,p:10,s:1,w:40},grain:{e:'🌾',g:2,p:25,s:1.2,w:30},
     worm:{e:'🐛',g:3,p:50,s:1.5,w:15}},
   ROTTEN:{e:'💀',g:0,p:0,s:1.3,deadly:true},
-  DL_PUB:'682ac1278f40bb1168ef979b',DL_PRI:'Yz-QeUARl0WeW8b4Y1q6FwVz-K47k_HUKN336S65F0_A',DL_BASE:'https://dreamlo.com/lb'
+  DL_PUB:'6a0ad2558f40bb17b0a37437',DL_PRI:'1AB4LThCe0Wdu7T9xQhM4AFwLJxWJih0Sle5Say_59MQ',DL_BASE:'http://dreamlo.com/lb'
 };
 const growthNeeded=l=>3+l*1.5;
 const $=id=>document.getElementById(id);
@@ -54,7 +54,7 @@ class Food{
 class Chick{
   constructor(){this.reset()}
   reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0}
-  get w(){return this.sz*(1+this.lv*0.18)}
+  get w(){return this.sz*(1+this.lv*0.35)}
   update(dt,dir){
     this.x+=dir*C.SPD*dt;this.x=Math.max(this.w/2,Math.min(C.W-this.w/2,this.x));
     this.bob+=dt*5;this.y=C.H-80+Math.sin(this.bob)*3;
@@ -152,7 +152,7 @@ function drawBg(ctx,t){
 class LB{
   static async submit(name,score,lv){
     if(!C.DL_PRI)return;const n=encodeURIComponent(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName');
-    try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${lv}`,{mode:'cors'})}catch(e){console.warn('LB submit fail',e)}
+    try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${lv}`,{mode:'no-cors'})}catch(e){console.warn('LB submit fail',e)}
   }
   static async get(){
     if(!C.DL_PUB)return[];
