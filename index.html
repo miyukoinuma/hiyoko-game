@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ひよこ育て！ - Grow Your Chick!</title>
+    <meta name="description" content="ごはんを食べてひよこを大きく育てよう！腐ったごはんに注意！オンラインランキング対応の育成ゲーム。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="screen-content">
+                <div class="title-chick" id="title-chick-anim">🐤</div>
+                <h1 id="game-title">ひよこ育て！</h1>
+                <p class="subtitle">ごはんを食べて大きく育てよう！<br>💀腐ったごはんに注意！💀</p>
+                <div class="input-group">
+                    <label for="username-input">なまえ</label>
+                    <input type="text" id="username-input" maxlength="12" placeholder="ひよこマスター">
+                </div>
+                <button id="start-btn" class="btn btn-primary">🎮 ゲームスタート！</button>
+                <button id="ranking-btn" class="btn btn-secondary">🏆 ランキング</button>
+                <div class="controls-hint">
+                    <p>🖥️ PC: ← → キーで移動</p>
+                    <p>📱 スマホ: タッチで移動</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud" class="hidden">
+            <div id="hud-top">
+                <div id="score-display">
+                    <span class="hud-label">SCORE</span>
+                    <span id="score-value">0</span>
+                </div>
+                <div id="level-display">
+                    <span id="level-text" class="hud-label">Lv.1 🐤</span>
+                    <div id="growth-bar-container">
+                        <div id="growth-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen">
+            <div class="screen-content">
+                <h2 id="gameover-title">💔 ゲームオーバー 💔</h2>
+                <div id="gameover-chick" class="gameover-chick-anim"></div>
+                <div id="final-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">スコア</span>
+                        <span id="final-score" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">到達レベル</span>
+                        <span id="final-level" class="stat-value">Lv.1</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">生存時間</span>
+                        <span id="final-time" class="stat-value">0秒</span>
+                    </div>
+                </div>
+                <div id="score-submit-status"></div>
+                <button id="retry-btn" class="btn btn-primary">🔄 もう一度</button>
+                <button id="gameover-ranking-btn" class="btn btn-secondary">🏆 ランキング</button>
+                <button id="title-btn" class="btn btn-ghost">🏠 タイトルへ</button>
+            </div>
+        </div>
+
+        <!-- Rankings Screen -->
+        <div id="ranking-screen" class="screen">
+            <div class="screen-content ranking-content">
+                <h2>🏆 ランキング TOP 20 🏆</h2>
+                <div id="ranking-list-wrapper">
+                    <div id="ranking-loading" class="ranking-msg">読み込み中...</div>
+                    <div id="ranking-error" class="ranking-msg hidden"></div>
+                    <table id="ranking-table" class="hidden">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>なまえ</th>
+                                <th>スコア</th>
+                                <th>Lv</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-tbody"></tbody>
+                    </table>
+                </div>
+                <button id="ranking-back-btn" class="btn btn-secondary">← もどる</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

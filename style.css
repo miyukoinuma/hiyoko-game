@@ -1,0 +1,477 @@
+/* =============================================
+   HIYOKO SODATE - Style Sheet
+   ============================================= */
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #FFB300;
+    --primary-dark: #FF8F00;
+    --accent: #FF5252;
+    --bg-dark: #1a1a2e;
+    --bg-card: rgba(255, 255, 255, 0.08);
+    --bg-card-solid: rgba(30, 30, 50, 0.92);
+    --text: #fff;
+    --text-dim: rgba(255, 255, 255, 0.6);
+    --glass: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --shadow: rgba(0, 0, 0, 0.4);
+    --font: 'M PLUS Rounded 1c', sans-serif;
+    --radius: 16px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font);
+    background: var(--bg-dark);
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+/* --- Game Container --- */
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+}
+
+#game-canvas {
+    display: block;
+    image-rendering: pixelated;
+    border-radius: 4px;
+    box-shadow: 0 0 40px rgba(255, 179, 0, 0.15), 0 8px 32px var(--shadow);
+}
+
+/* --- Screens --- */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    z-index: 10;
+}
+
+.screen.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.screen-content {
+    background: var(--bg-card-solid);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    text-align: center;
+    max-width: 380px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.05);
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- Title --- */
+.title-chick {
+    font-size: 64px;
+    animation: bounce 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(255, 179, 0, 0.3));
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+#game-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #FFD54F, #FFB300, #FF8F00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 8px 0 4px;
+    text-shadow: none;
+}
+
+.subtitle {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* --- Input --- */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-align: left;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 1rem;
+    font-weight: 700;
+    outline: none;
+    transition: var(--transition);
+}
+
+.input-group input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 179, 0, 0.08);
+    box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.15);
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* --- Buttons --- */
+.btn {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font);
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(rgba(255,255,255,0.15), transparent);
+    pointer-events: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #1a1a2e;
+    box-shadow: 0 4px 15px rgba(255, 179, 0, 0.35);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 179, 0, 0.5);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: var(--glass);
+    color: var(--text);
+    border: 1px solid var(--glass-border);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+}
+
+.btn-ghost:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Controls Hint --- */
+.controls-hint {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.controls-hint p {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+}
+
+/* --- HUD --- */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    padding: 8px 12px;
+    pointer-events: none;
+}
+
+#hud.hidden {
+    display: none;
+}
+
+#hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+#score-display, #level-display {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hud-label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+#score-value {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--primary);
+}
+
+#level-text {
+    font-size: 0.65rem;
+}
+
+#growth-bar-container {
+    width: 80px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+#growth-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* --- Game Over --- */
+#gameover-title {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 12px;
+}
+
+.gameover-chick-anim {
+    font-size: 48px;
+    margin-bottom: 12px;
+    animation: sadBounce 2s ease-in-out infinite;
+}
+
+@keyframes sadBounce {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+#final-stats {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--primary);
+}
+
+#score-submit-status {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    min-height: 20px;
+}
+
+/* --- Rankings --- */
+.ranking-content {
+    max-width: 420px;
+}
+
+.ranking-content h2 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #FFD54F, #FFB300);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#ranking-list-wrapper {
+    max-height: 50vh;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    border-radius: 12px;
+}
+
+#ranking-list-wrapper::-webkit-scrollbar {
+    width: 4px;
+}
+
+#ranking-list-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.ranking-msg {
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+#ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#ranking-table thead th {
+    padding: 10px 8px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-card-solid);
+}
+
+#ranking-table tbody tr {
+    transition: background 0.2s;
+}
+
+#ranking-table tbody tr:hover {
+    background: rgba(255, 179, 0, 0.08);
+}
+
+#ranking-table tbody td {
+    padding: 10px 8px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+#ranking-table tbody tr:nth-child(1) td:first-child { color: #FFD700; font-weight: 900; }
+#ranking-table tbody tr:nth-child(2) td:first-child { color: #C0C0C0; font-weight: 900; }
+#ranking-table tbody tr:nth-child(3) td:first-child { color: #CD7F32; font-weight: 900; }
+
+#ranking-table tbody td:nth-child(1) { text-align: center; width: 40px; }
+#ranking-table tbody td:nth-child(3) { color: var(--primary); font-weight: 700; text-align: right; }
+#ranking-table tbody td:nth-child(4) { text-align: center; color: var(--text-dim); }
+
+.hidden {
+    display: none !important;
+}
+
+/* --- Responsive --- */
+@media (max-width: 500px) {
+    .screen-content {
+        padding: 24px 20px;
+        border-radius: 12px;
+    }
+
+    #game-title {
+        font-size: 1.8rem;
+    }
+
+    .title-chick {
+        font-size: 48px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-height: 600px) {
+    .screen-content {
+        padding: 16px 20px;
+    }
+
+    .title-chick {
+        font-size: 40px;
+    }
+
+    #game-title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 12px;
+    }
+}
