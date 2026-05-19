@@ -231,6 +231,30 @@ class Game{
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     if(id)$(id+'-screen').classList.add('active');
     $('hud').classList.toggle('hidden',id!==null&&id!=='game');
+    if(id==='tutorial')this.drawTutorial();
+  }
+  drawTutorial(){
+    const cvs=$('tutorial-canvas');if(!cvs)return;
+    const ctx=cvs.getContext('2d');ctx.clearRect(0,0,cvs.width,cvs.height);
+    const temp=new Chick();
+    // ひよこ
+    ctx.save();ctx.translate(75,65);
+    temp.drawBaby(ctx,45);
+    ctx.beginPath();ctx.arc(0,0, (22.5+12)*0.7,0,Math.PI*2);ctx.setLineDash([4,4]);ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0, (22.5+14)*0.45,0,Math.PI*2);ctx.setLineDash([]);ctx.fillStyle='rgba(0,255,0,0.4)';ctx.fill();ctx.strokeStyle='#00FF00';ctx.stroke();
+    ctx.font='16px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🍚', 25, -25);ctx.fillText('💀', 0, 0);
+    ctx.fillStyle='#fff';ctx.fillText('ひよこ(Lv.1)',0,65);
+    ctx.restore();
+    // にわとり
+    ctx.save();ctx.translate(225,65);
+    temp.drawChicken(ctx,90);
+    ctx.beginPath();ctx.arc(0,0, (45+12)*0.7,0,Math.PI*2);ctx.setLineDash([4,4]);ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0, (45+14)*0.45,0,Math.PI*2);ctx.setLineDash([]);ctx.fillStyle='rgba(0,255,0,0.4)';ctx.fill();ctx.strokeStyle='#00FF00';ctx.stroke();
+    ctx.font='16px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🍚', 45, -45);ctx.fillText('💀', 0, 0);
+    ctx.fillStyle='#fff';ctx.fillText('にわとり(Lv.12~)',0,65);
+    ctx.restore();
   }
   start(){
     this.chick.reset();this.foods=[];this.score=0;this.time=0;this.spawnInt=C.SI;
