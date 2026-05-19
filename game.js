@@ -65,7 +65,9 @@ class Chick{
   reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0}
   get w(){return this.sz*(1+this.lv*0.35)}
   update(dt,dir){
-    this.x+=dir*C.SPD*dt;this.x=Math.max(this.w/2,Math.min(C.W-this.w/2,this.x));
+    this.x+=dir*C.SPD*dt;
+    const limit=Math.min(this.w/2, 40);
+    this.x=Math.max(limit,Math.min(C.W-limit,this.x));
     this.bob+=dt*5;this.y=C.H-80+Math.sin(this.bob)*3;
     if(this.pulse>0)this.pulse-=dt*3;
   }
