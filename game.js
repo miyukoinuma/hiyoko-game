@@ -251,8 +251,8 @@ class Game{
     // ひよこ
     ctx.save();ctx.translate(75,65);
     temp.drawBaby(ctx,45);
-    ctx.beginPath();ctx.arc(0,0, (22.5+12)*0.7,0,Math.PI*2);ctx.setLineDash([4,4]);ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.stroke();
-    ctx.beginPath();ctx.arc(0,0, (22.5+14)*0.45,0,Math.PI*2);ctx.setLineDash([]);ctx.fillStyle='rgba(0,255,0,0.4)';ctx.fill();ctx.strokeStyle='#00FF00';ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0, 22.5*0.7,0,Math.PI*2);ctx.setLineDash([4,4]);ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0, 22.5*0.45,0,Math.PI*2);ctx.setLineDash([]);ctx.fillStyle='rgba(0,255,0,0.4)';ctx.fill();ctx.strokeStyle='#00FF00';ctx.stroke();
     ctx.font='16px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#000';
     ctx.fillText('🍚', 25, -25);ctx.fillText('💀', 0, 0);
     ctx.fillStyle='#fff';ctx.fillText('ひよこ(Lv.1)',0,65);
@@ -260,8 +260,8 @@ class Game{
     // にわとり
     ctx.save();ctx.translate(225,65);
     temp.drawChicken(ctx,90);
-    ctx.beginPath();ctx.arc(0,0, (45+12)*0.7,0,Math.PI*2);ctx.setLineDash([4,4]);ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.stroke();
-    ctx.beginPath();ctx.arc(0,0, (45+14)*0.45,0,Math.PI*2);ctx.setLineDash([]);ctx.fillStyle='rgba(0,255,0,0.4)';ctx.fill();ctx.strokeStyle='#00FF00';ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0, 45*0.7,0,Math.PI*2);ctx.setLineDash([4,4]);ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0, 45*0.45,0,Math.PI*2);ctx.setLineDash([]);ctx.fillStyle='rgba(0,255,0,0.4)';ctx.fill();ctx.strokeStyle='#00FF00';ctx.stroke();
     ctx.font='16px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#000';
     ctx.fillText('🍚', 45, -45);ctx.fillText('💀', 0, 0);
     ctx.fillStyle='#fff';ctx.fillText('にわとり(Lv.12~)',0,65);
@@ -294,7 +294,7 @@ class Game{
   checkCollision(f){
     const cw=this.chick.w,dx=f.x-this.chick.x,dy=f.y-this.chick.y;
     const hitMult=f.type.deadly?0.45:0.7;
-    return Math.abs(dx)<(cw/2+f.sz/2)*hitMult&&Math.abs(dy)<(cw/2+f.sz/2)*hitMult;
+    return Math.sqrt(dx*dx+dy*dy)<(cw/2+f.sz/2)*hitMult;
   }
   gameOver(){
     this.running=false;this.snd.die();this.shake=0.5;
