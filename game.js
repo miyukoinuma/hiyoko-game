@@ -249,12 +249,13 @@ class Game{
       for(const f of foods){cum+=f.w;if(r<=cum){type=f;break}}
     }
     const margin=30,x=margin+Math.random()*(C.W-margin*2);
-    const sp=(C.FSPD+lv*12)*type.s;
+    const sp=(C.FSPD+lv*6)*type.s;
     this.foods.push(new Food(type,x,sp));
   }
   checkCollision(f){
     const cw=this.chick.w,dx=f.x-this.chick.x,dy=f.y-this.chick.y;
-    return Math.abs(dx)<(cw/2+f.sz/2)*0.7&&Math.abs(dy)<(cw/2+f.sz/2)*0.7;
+    const hitMult=f.type.deadly?0.45:0.7;
+    return Math.abs(dx)<(cw/2+f.sz/2)*hitMult&&Math.abs(dy)<(cw/2+f.sz/2)*hitMult;
   }
   gameOver(){
     this.running=false;this.snd.die();this.shake=0.5;
