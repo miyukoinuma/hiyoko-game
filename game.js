@@ -168,7 +168,9 @@ function drawBg(ctx,t){
 // Leaderboard API
 class LB{
   static async submit(name,score,lv){
-    if(!C.DL_PRI)return;const n=encodeURIComponent(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName');
+    if(!C.DL_PRI)return;
+    const cleanName=(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName')+'-'+Date.now().toString(36);
+    const n=encodeURIComponent(cleanName);
     try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${lv}`)}catch(e){console.warn('LB submit fail',e)}
   }
   static async get(){
@@ -272,7 +274,8 @@ class Game{
     if(!entries.length){$('ranking-error').textContent='まだランキングデータがありません。';$('ranking-error').classList.remove('hidden');return}
     const tb=$('ranking-tbody');tb.innerHTML='';
     entries.forEach((e,i)=>{const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.seconds||'-'}</td>`;tb.appendChild(tr)});
+      const dName=e.name.split('-')[0];
+      tr.innerHTML=`<td>${i+1}</td><td>${dName}</td><td>${e.score}</td><td>${e.seconds||'-'}</td>`;tb.appendChild(tr)});
     $('ranking-table').classList.remove('hidden');
   }
   update(dt){
