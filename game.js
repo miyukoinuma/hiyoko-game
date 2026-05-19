@@ -71,7 +71,7 @@ class Chick{
   }
   addGrowth(g,snd){
     this.growth+=g;const need=growthNeeded(this.lv);
-    if(this.growth>=need&&this.lv<C.MAX_LV){this.growth-=need;this.lv++;this.pulse=1;snd.levelUp();return true}
+    if(this.growth>=need){this.growth-=need;this.lv++;this.pulse=1;snd.levelUp();return true}
     return false;
   }
   draw(ctx){
@@ -219,6 +219,8 @@ class Game{
     $('title-btn').onclick=()=>this.showScreen('start');
     $('ranking-btn').onclick=()=>{this.prevScreen='start';this.showRanking()};
     $('gameover-ranking-btn').onclick=()=>{this.prevScreen='gameover';this.showRanking()};
+    $('clear-ranking-btn').onclick=()=>{this.prevScreen='gameclear';this.showRanking()};
+    $('clear-title-btn').onclick=()=>this.showScreen('start');
     $('ranking-back-btn').onclick=()=>this.showScreen(this.prevScreen);
   }
   showScreen(id){
@@ -267,6 +269,16 @@ class Game{
     }else{st.textContent=''}
     setTimeout(()=>this.showScreen('gameover'),600);
   }
+  gameClear(){
+    this.running=false;this.score+=100000;
+    [0,200,400,600,800].forEach(d=>setTimeout(()=>this.snd.levelUp(),d));
+    $('clear-score').textContent=Math.floor(this.score);
+    const st=$('clear-submit-status');
+    if(C.DL_PRI){st.textContent='スコア送信中...';
+      LB.submit(this.username,Math.floor(this.score),this.chick.lv,Math.floor(this.time)).then(()=>st.textContent='✅ スコア送信完了！').catch(()=>st.textContent='❌ 送信失敗')
+    }else{st.textContent=''}
+    setTimeout(()=>this.showScreen('gameclear'),1500);
+  }
   async showRanking(){
     this.showScreen('ranking');$('ranking-loading').classList.remove('hidden');
     $('ranking-table').classList.add('hidden');$('ranking-error').classList.add('hidden');
@@ -286,11 +298,12 @@ class Game{
   update(dt){
     this.ptc.update(dt);if(this.shake>0)this.shake-=dt;
     if(!this.running)return;
-    this.time+=dt;this.score+=this.chick.lv*dt;
+    this.time+=dt;this.score+=10*dt;
     // input
     let dir=this.getDir();
     if(this.touchX!==null){const diff=this.touchX-this.chick.x;dir=diff>10?1:diff<-10?-1:0}
     this.chick.update(dt,dir);
+    if(this.chick.w>=C.W){this.gameClear();return;}
     // spawn
     this.spawnTimer+=dt*1000;if(this.spawnTimer>=this.spawnInt){this.spawnTimer=0;this.spawnFood();
       this.spawnInt=Math.max(C.SI_MIN,this.spawnInt*0.998)}
@@ -300,7 +313,8 @@ class Game{
       if(f.dead)return false;
       if(this.checkCollision(f)){
         if(f.type.deadly){this.ptc.emit(f.x,f.y,'#00ff00',15);this.gameOver();return false}
-        this.score+=f.type.p*this.chick.lv;this.chick.addGrowth(f.type.g,this.snd);
+        this.score+=f.type.p*this.chick.lv;
+        if(this.chick.addGrowth(f.type.g,this.snd)){this.score+=this.chick.lv*200;}
         this.snd.eat();this.ptc.emit(f.x,f.y,'#FFD600',10);this.updateHUD();return false;
       }return true;
     });
