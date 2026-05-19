@@ -2,7 +2,7 @@
 const C = {W:480,H:720,BASE:30,SPD:280,MAX_LV:20,CHKN:12,
   FSPD:120,SI:1000,SI_MIN:280,ROT0:0.12,ROT_INC:0.018,
   FOODS:{rice:{e:'🍚',g:1,p:10,s:1,w:40},grain:{e:'🌾',g:2,p:25,s:1.2,w:30},
-    worm:{e:'🐛',g:3,p:50,s:1.5,w:15}},
+    peach:{e:'🍑',g:3,p:50,s:1.5,w:15}},
   ROTTEN:{e:'💀',g:0,p:0,s:1.3,deadly:true},
   DL_PUB:'6a0ad2558f40bb17b0a37437',DL_PRI:'1AB4LThCe0Wdu7T9xQhM4AFwLJxWJih0Sle5Say_59MQ',DL_BASE:'https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb'
 };
@@ -259,6 +259,7 @@ class Game{
     $('ranking-table').classList.remove('hidden');
   }
   update(dt){
+    this.ptc.update(dt);if(this.shake>0)this.shake-=dt;
     if(!this.running)return;
     this.time+=dt;this.score+=this.chick.lv*dt;
     // input
@@ -278,7 +279,6 @@ class Game{
         this.snd.eat();this.ptc.emit(f.x,f.y,'#FFD600',10);this.updateHUD();return false;
       }return true;
     });
-    this.ptc.update(dt);if(this.shake>0)this.shake-=dt;
   }
   render(){
     const ctx=this.ctx;ctx.save();
