@@ -38,13 +38,23 @@ class Particles{
 }
 
 // Food
+const foodCache={};
+function getFoodCache(type,sz){
+  const k=type.e;if(foodCache[k])return foodCache[k];
+  const c=document.createElement('canvas');c.width=sz*2.5;c.height=sz*2.5;
+  const ctx=c.getContext('2d');
+  ctx.font=sz+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(type.e,sz*1.25,sz*1.25);
+  foodCache[k]=c;return c;
+}
+
 class Food{
   constructor(type,x,sp){this.type=type;this.x=x;this.y=-30;this.sp=sp;
     this.sz=type.deadly?28:24;this.rot=0;this.dead=false}
   update(dt){this.y+=this.sp*dt;this.rot+=dt*2;if(this.y>C.H+40)this.dead=true}
   draw(ctx){ctx.save();ctx.translate(this.x,this.y);ctx.rotate(Math.sin(this.rot)*0.2);
-    ctx.font=this.sz+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(this.type.e,0,0);
+    const cache=getFoodCache(this.type,this.sz);
+    ctx.drawImage(cache,-this.sz*1.25,-this.sz*1.25);
     if(this.type.deadly){ctx.globalAlpha=0.3+Math.sin(this.rot*3)*0.15;
       ctx.fillStyle='#00ff00';ctx.beginPath();ctx.arc(0,0,this.sz*0.6,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
     ctx.restore()}
@@ -112,6 +122,7 @@ class Chick{
     ctx.beginPath();ctx.moveTo(0,-r);ctx.quadraticCurveTo(r*0.1,-r*1.4,r*0.05,-r*1.3);ctx.stroke();
   }
   drawChicken(ctx,s){
+    s*=1.2;
     const r=s/2;
     ctx.fillStyle='rgba(0,0,0,0.15)';ctx.beginPath();ctx.ellipse(0,r*0.85,r*0.7,r*0.15,0,0,Math.PI*2);ctx.fill();
     // legs
