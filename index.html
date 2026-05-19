@@ -33,6 +33,31 @@
             </div>
         </div>
 
+        <!-- Tutorial Screen -->
+        <div id="tutorial-screen" class="screen hidden">
+            <div class="screen-content">
+                <h2 style="color:#FF8C00; margin-bottom:10px;">遊び方＆当たり判定</h2>
+                <div class="tutorial-visual" style="position:relative; width:150px; height:150px; margin:0 auto; display:flex; justify-content:center; align-items:center;">
+                    <div style="font-size:80px; z-index:1;">🐔</div>
+                    <!-- Food Hitbox -->
+                    <div style="position:absolute; width:120px; height:120px; border:3px dashed #FFD700; border-radius:50%; box-sizing:border-box;">
+                        <span style="position:absolute; top:-15px; right:-25px; font-size:24px;">🍚</span>
+                    </div>
+                    <!-- Poison Hitbox -->
+                    <div style="position:absolute; width:65px; height:65px; background-color:rgba(0,255,0,0.4); border:2px solid #00FF00; border-radius:50%; box-sizing:border-box; z-index:2;">
+                        <span style="position:absolute; bottom:-15px; left:-25px; font-size:24px;">💀</span>
+                    </div>
+                </div>
+                <div style="text-align:left; margin-top:20px; font-size:0.95rem; line-height:1.5;">
+                    <p>🟡 <b>黄色い点線</b>：<br>　羽にかすっても食べられる！<br>　（広範囲で超有利）</p>
+                    <p style="margin-top:10px;">🟢 <b>緑のエリア（コア）</b>：<br>　体の中心に毒が当たるとアウト！<br>　（狭いので避けやすい）</p>
+                    <p style="margin-top:10px; color:#FF4500; font-weight:bold;">※体と一緒にコアも巨大化するので注意！</p>
+                </div>
+                <button id="tutorial-start-btn" class="btn btn-primary" style="margin-top:20px;">▶ 準備OK！（開始）</button>
+                <button id="tutorial-back-btn" class="btn btn-ghost">◀ もどる</button>
+            </div>
+        </div>
+
         <!-- HUD -->
         <div id="hud" class="hidden">
             <div id="hud-top">

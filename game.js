@@ -216,7 +216,9 @@ class Game{
     this.cvs.addEventListener('mousedown',()=>this.snd.init());
   }
   bindUI(){
-    $('start-btn').onclick=()=>{this.snd.init();this.username=$('username-input').value.trim()||'ひよこマスター';this.start()};
+    $('start-btn').onclick=()=>{this.snd.init();this.username=$('username-input').value.trim()||'ひよこマスター';this.showScreen('tutorial')};
+    $('tutorial-start-btn').onclick=()=>this.start();
+    $('tutorial-back-btn').onclick=()=>this.showScreen('start');
     $('retry-btn').onclick=()=>this.start();
     $('title-btn').onclick=()=>this.showScreen('start');
     $('ranking-btn').onclick=()=>{this.prevScreen='start';this.showRanking()};
