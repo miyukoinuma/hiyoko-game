@@ -34,7 +34,7 @@ class Particles{
   }
   update(dt){this.ps=this.ps.filter(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=200*dt;p.life-=dt*2;return p.life>0})}
   draw(ctx){this.ps.forEach(p=>{ctx.globalAlpha=p.life;ctx.fillStyle=p.col;
-    ctx.beginPath();ctx.arc(p.x,p.y,p.sz*p.life,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1})}
+    const r=p.sz*p.life;ctx.fillRect(p.x-r,p.y-r,r*2,r*2);ctx.globalAlpha=1})}
 }
 
 // Food
@@ -51,6 +51,15 @@ class Food{
 }
 
 // Chick
+let chickCache={false:null,true:null};
+function getChickCache(isAdult){
+  if(chickCache[isAdult])return chickCache[isAdult];
+  const c=document.createElement('canvas');c.width=160;c.height=160;
+  const ctx=c.getContext('2d');ctx.translate(80,80);
+  const temp=new Chick();
+  if(isAdult)temp.drawChicken(ctx,100);else temp.drawBaby(ctx,100);
+  chickCache[isAdult]=c;return c;
+}
 class Chick{
   constructor(){this.reset()}
   reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0}
@@ -66,8 +75,10 @@ class Chick{
     return false;
   }
   draw(ctx){
-    const s=this.w,px=1+this.pulse*0.2;ctx.save();ctx.translate(this.x,this.y);ctx.scale(px,px);
-    if(this.lv>=C.CHKN)this.drawChicken(ctx,s);else this.drawBaby(ctx,s);
+    const s=this.w,px=1+this.pulse*0.2;ctx.save();ctx.translate(this.x,this.y);
+    const isAdult=this.lv>=C.CHKN;const cache=getChickCache(isAdult);
+    const scale=(s*px)/100;ctx.scale(scale,scale);
+    ctx.drawImage(cache,-80,-80);
     ctx.restore();
   }
   drawBaby(ctx,s){
@@ -127,10 +138,24 @@ class Chick{
 }
 
 // Background
-function drawBg(ctx,t){
+let bgCache=null;
+function getBgCache(){
+  if(bgCache)return bgCache;
+  const c=document.createElement('canvas');c.width=C.W;c.height=C.H;
+  const ctx=c.getContext('2d');
   const grd=ctx.createLinearGradient(0,0,0,C.H);
   grd.addColorStop(0,'#87CEEB');grd.addColorStop(0.6,'#B3E5FC');grd.addColorStop(1,'#E1F5FE');
   ctx.fillStyle=grd;ctx.fillRect(0,0,C.W,C.H);
+  ctx.fillStyle='#66BB6A';ctx.fillRect(0,C.H-60,C.W,60);
+  ctx.fillStyle='#4CAF50';for(let i=0;i<C.W;i+=20){
+    ctx.beginPath();ctx.arc(i,C.H-60,12,Math.PI,0);ctx.fill();}
+  ctx.fillStyle='#43A047';ctx.fillRect(0,C.H-30,C.W,30);
+  ctx.fillStyle='#FFEB3B';[[40,C.H-45],[120,C.H-50],[300,C.H-42],[420,C.H-48]].forEach(([fx,fy])=>{
+    ctx.beginPath();ctx.arc(fx,fy,4,0,Math.PI*2);ctx.fill();});
+  bgCache=c;return bgCache;
+}
+function drawBg(ctx,t){
+  ctx.drawImage(getBgCache(),0,0);
   // clouds
   ctx.fillStyle='rgba(255,255,255,0.7)';
   [[80,60,40],[250,90,30],[400,50,35],[150,140,25]].forEach(([bx,by,br])=>{
@@ -138,14 +163,6 @@ function drawBg(ctx,t){
     ctx.beginPath();ctx.arc(x,by,br,0,Math.PI*2);ctx.arc(x+br*0.7,by-br*0.2,br*0.7,0,Math.PI*2);
     ctx.arc(x-br*0.5,by+br*0.1,br*0.6,0,Math.PI*2);ctx.fill();
   });
-  // grass
-  ctx.fillStyle='#66BB6A';ctx.fillRect(0,C.H-60,C.W,60);
-  ctx.fillStyle='#4CAF50';for(let i=0;i<C.W;i+=20){
-    ctx.beginPath();ctx.arc(i,C.H-60,12,Math.PI,0);ctx.fill();}
-  ctx.fillStyle='#43A047';ctx.fillRect(0,C.H-30,C.W,30);
-  // flowers
-  ctx.fillStyle='#FFEB3B';[[40,C.H-45],[120,C.H-50],[300,C.H-42],[420,C.H-48]].forEach(([fx,fy])=>{
-    ctx.beginPath();ctx.arc(fx,fy,4,0,Math.PI*2);ctx.fill();});
 }
 
 // Leaderboard API
