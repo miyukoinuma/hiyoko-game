@@ -4,7 +4,7 @@ const C = {W:480,H:720,BASE:30,SPD:280,MAX_LV:20,CHKN:12,
   FOODS:{rice:{e:'🍚',g:1,p:10,s:1,w:40},grain:{e:'🌾',g:2,p:25,s:1.2,w:30},
     worm:{e:'🐛',g:3,p:50,s:1.5,w:15}},
   ROTTEN:{e:'💀',g:0,p:0,s:1.3,deadly:true},
-  DL_PUB:'6a0ad2558f40bb17b0a37437',DL_PRI:'1AB4LThCe0Wdu7T9xQhM4AFwLJxWJih0Sle5Say_59MQ',DL_BASE:'http://dreamlo.com/lb'
+  DL_PUB:'6a0ad2558f40bb17b0a37437',DL_PRI:'1AB4LThCe0Wdu7T9xQhM4AFwLJxWJih0Sle5Say_59MQ',DL_BASE:'https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb'
 };
 const growthNeeded=l=>3+l*1.5;
 const $=id=>document.getElementById(id);
@@ -152,7 +152,7 @@ function drawBg(ctx,t){
 class LB{
   static async submit(name,score,lv){
     if(!C.DL_PRI)return;const n=encodeURIComponent(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName');
-    try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${lv}`,{mode:'no-cors'})}catch(e){console.warn('LB submit fail',e)}
+    try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${lv}`)}catch(e){console.warn('LB submit fail',e)}
   }
   static async get(){
     if(!C.DL_PUB)return[];
