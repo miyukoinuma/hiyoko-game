@@ -157,21 +157,23 @@ function getBgCache(){
 function drawBg(ctx,t){
   ctx.drawImage(getBgCache(),0,0);
   // clouds
+  ctx.save();
   ctx.fillStyle='rgba(255,255,255,0.7)';
   [[80,60,40],[250,90,30],[400,50,35],[150,140,25]].forEach(([bx,by,br])=>{
     const x=(bx+t*8)%( C.W+100)-50;
     ctx.beginPath();ctx.arc(x,by,br,0,Math.PI*2);ctx.arc(x+br*0.7,by-br*0.2,br*0.7,0,Math.PI*2);
     ctx.arc(x-br*0.5,by+br*0.1,br*0.6,0,Math.PI*2);ctx.fill();
   });
+  ctx.restore();
 }
 
 // Leaderboard API
 class LB{
-  static async submit(name,score,lv){
+  static async submit(name,score,lv,time){
     if(!C.DL_PRI)return;
     const cleanName=(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName')+'-'+Date.now().toString(36);
     const n=encodeURIComponent(cleanName);
-    try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${lv}`)}catch(e){console.warn('LB submit fail',e)}
+    try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${time}/${lv}`)}catch(e){console.warn('LB submit fail',e)}
   }
   static async get(){
     if(!C.DL_PUB)return[];
@@ -261,7 +263,7 @@ class Game{
     $('final-time').textContent=Math.floor(this.time)+'秒';
     const st=$('score-submit-status');
     if(C.DL_PRI){st.textContent='スコア送信中...';
-      LB.submit(this.username,Math.floor(this.score),this.chick.lv).then(()=>st.textContent='✅ スコア送信完了！').catch(()=>st.textContent='❌ 送信失敗')
+      LB.submit(this.username,Math.floor(this.score),this.chick.lv,Math.floor(this.time)).then(()=>st.textContent='✅ スコア送信完了！').catch(()=>st.textContent='❌ 送信失敗')
     }else{st.textContent=''}
     setTimeout(()=>this.showScreen('gameover'),600);
   }
@@ -275,7 +277,10 @@ class Game{
     const tb=$('ranking-tbody');tb.innerHTML='';
     entries.forEach((e,i)=>{const tr=document.createElement('tr');
       const dName=e.name.split('-')[0];
-      tr.innerHTML=`<td>${i+1}</td><td>${dName}</td><td>${e.score}</td><td>${e.seconds||'-'}</td>`;tb.appendChild(tr)});
+      let lvStr='-',timeStr='-';
+      if(e.text){lvStr=e.text;timeStr=e.seconds?e.seconds+'秒':'-';}
+      else if(e.seconds){lvStr=e.seconds;}
+      tr.innerHTML=`<td>${i+1}</td><td>${dName}</td><td>${e.score}</td><td>${lvStr}</td><td>${timeStr}</td>`;tb.appendChild(tr)});
     $('ranking-table').classList.remove('hidden');
   }
   update(dt){
