@@ -77,7 +77,7 @@ function getChickCache(isAdult){
 class Chick{
   constructor(){this.reset()}
   reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0}
-  get w(){return this.sz*(1+this.lv*0.35)}
+  get w(){return this.sz*(1+this.lv*0.65)}
   update(dt,dir){
     this.x+=dir*C.SPD*dt;
     const limit=Math.min(this.w/2, 40);
@@ -284,7 +284,7 @@ class Game{
     $('growth-bar').style.width=pct+'%';
   }
   spawnFood(){
-    const lv=this.chick.lv,rotChance=Math.min(0.45,C.ROT0+C.ROT_INC*lv);
+    const lv=this.chick.lv,rotChance=Math.min(0.35,C.ROT0+C.ROT_INC*lv);
     const isRotten=Math.random()<rotChance;
     let type;
     if(isRotten){type=C.ROTTEN}else{
