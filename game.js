@@ -6,7 +6,11 @@ const C = {W:480,H:720,BASE:30,SPD:280,MAX_LV:20,CHKN:12,
   ROTTEN:{e:'💀',g:0,p:0,s:1.3,deadly:true},
   DL_PUB:'6a0ad2558f40bb17b0a37437',DL_PRI:'1AB4LThCe0Wdu7T9xQhM4AFwLJxWJih0Sle5Say_59MQ',DL_BASE:'https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb'
 };
-const growthNeeded=l=>3+l*1.5;
+const growthNeeded=l=>{
+  const baseNeed=2.8+l*1.25;
+  const lateGameDiscount=Math.max(0,l-8)*0.55;
+  return Math.max(5,baseNeed-lateGameDiscount);
+};
 const $=id=>document.getElementById(id);
 
 // Sound
