@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>ランキング復元</title>
+</head>
+<body>
+  <p id="log">復元処理を実行中...</p>
+  <script>
+    const PRI = '1AB4LThCe0Wdu7T9xQhM4AFwLJxWJih0Sle5Say_59MQ';
+    const BASE = 'https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb';
+    const log = document.getElementById('log');
+
+    const entries = [
+      ['み卍-mpe1ktrk', 240733, 288, 25],
+      ['ひよこマスター-mpduhclp', 228266, 241, 24],
+      ['ぺろり-mpcizgjd', 206739, 407, 26],
+      ['卵かけごはん食べたい-mpckof00', 133790, 321, 22],
+      ['ぽ-mpdb8eh4', 121196, 308, 21],
+      ['ぴよ-mpe3airs', 108318, 256, 22],
+      ['み卍-mpe2h9af', 107072, 229, 22],
+      ['ぽ-mpe1z1aw', 99201, 216, 21],
+    ];
+
+    const wrongNames = ['み十-mpe1ktrk', 'み十-mpe2h9af', 'み卐-mpe1ktrk', 'み卐-mpe2h9af', 'ぱろり-mpcizgjd'];
+
+    async function call(path) {
+      const r = await fetch(`${BASE}/${PRI}/${path}`);
+      return r.text();
+    }
+
+    (async () => {
+      const lines = [];
+      for (const n of wrongNames) {
+        lines.push(`delete ${n}: ${await call(`delete/${encodeURIComponent(n)}`)}`);
+      }
+      for (const [name, score, sec, lv] of entries) {
+        const path = `add/${encodeURIComponent(name)}/${score}/${sec}/${lv}`;
+        lines.push(`add ${name}: ${await call(path)}`);
+      }
+      log.innerHTML = lines.join('<br>');
+      log.innerHTML += '<br><br>完了。ゲームのランキング画面で確認してください。';
+    })().catch(e => { log.textContent = 'エラー: ' + e; });
+  </script>
+</body>
+</html>
