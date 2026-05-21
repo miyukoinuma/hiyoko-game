@@ -11,6 +11,7 @@ const growthNeeded=l=>{
   const lateGameDiscount=Math.max(0,l-8)*0.55;
   return Math.max(5,baseNeed-lateGameDiscount);
 };
+const hitRadius=(cw,fsz,deadly)=>(cw/2+fsz/2)*(deadly?0.45:0.7);
 const $=id=>document.getElementById(id);
 
 // Sound
@@ -59,8 +60,6 @@ class Food{
   draw(ctx){ctx.save();ctx.translate(this.x,this.y);ctx.rotate(Math.sin(this.rot)*0.2);
     const cache=getFoodCache(this.type,this.sz);
     ctx.drawImage(cache,-this.sz*1.25,-this.sz*1.25);
-    if(this.type.deadly){ctx.globalAlpha=0.3+Math.sin(this.rot*3)*0.15;
-      ctx.fillStyle='#00ff00';ctx.beginPath();ctx.arc(0,0,this.sz*0.6,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
     ctx.restore()}
 }
 
@@ -77,7 +76,7 @@ function getChickCache(isAdult){
 class Chick{
   constructor(){this.reset()}
   reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0}
-  get w(){return this.sz*(1+this.lv*0.62)}
+  get w(){return this.sz*(1+this.lv*0.63)}
   update(dt,dir){
     this.x+=dir*C.SPD*dt;
     const limit=Math.min(this.w/2, 40);
@@ -296,9 +295,25 @@ class Game{
     this.foods.push(new Food(type,x,sp));
   }
   checkCollision(f){
-    const cw=this.chick.w,dx=f.x-this.chick.x,dy=f.y-this.chick.y;
-    const hitMult=f.type.deadly?0.45:0.7;
-    return Math.sqrt(dx*dx+dy*dy)<(cw/2+f.sz/2)*hitMult;
+    const dx=f.x-this.chick.x,dy=f.y-this.chick.y;
+    return Math.sqrt(dx*dx+dy*dy)<hitRadius(this.chick.w,f.sz,f.type.deadly);
+  }
+  drawDeadlyHints(ctx){
+    const cx=this.chick.x,cy=this.chick.y,cw=this.chick.w;
+    this.foods.forEach(f=>{
+      if(!f.type.deadly||f.dead)return;
+      const dx=f.x-cx,dy=f.y-cy,dist=Math.sqrt(dx*dx+dy*dy);
+      const r=hitRadius(cw,f.sz,true);
+      if(dist>r+140)return;
+      const a=Math.min(0.28,Math.max(0.1,0.32-dist/500));
+      ctx.save();
+      ctx.globalAlpha=a;
+      ctx.strokeStyle='rgba(55,75,55,0.85)';
+      ctx.lineWidth=1;
+      ctx.setLineDash([4,6]);
+      ctx.beginPath();ctx.arc(f.x,f.y,r,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    });
   }
   gameOver(){
     this.running=false;this.snd.die();this.shake=0.5;
@@ -367,6 +382,7 @@ class Game{
     const ctx=this.ctx;ctx.save();
     if(this.shake>0){const s=this.shake*8;ctx.translate(Math.random()*s-s/2,Math.random()*s-s/2)}
     drawBg(ctx,this.time);
+    this.drawDeadlyHints(ctx);
     this.foods.forEach(f=>f.draw(ctx));this.chick.draw(ctx);this.ptc.draw(ctx);
     ctx.restore();
   }
