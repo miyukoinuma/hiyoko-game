@@ -77,7 +77,7 @@ function getChickCache(isAdult){
 class Chick{
   constructor(){this.reset()}
   reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0}
-  get w(){return this.sz*(1+this.lv*0.62)}
+  get w(){return this.sz*(1+this.lv*0.64)}
   update(dt,dir){
     this.x+=dir*C.SPD*dt;
     const limit=Math.min(this.w/2, 40);
