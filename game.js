@@ -186,18 +186,23 @@ function drawBg(ctx,t){
 
 // Leaderboard API
 class LB{
+  static todayTag(){const d=new Date();return d.getFullYear().toString()+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0')}
   static async submit(name,score,lv,time){
     if(!C.DL_PRI)return;
-    const cleanName=(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName')+'-'+Date.now().toString(36);
+    const cleanName=(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName')+'_'+LB.todayTag();
     const n=encodeURIComponent(cleanName);
     try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${time}/${lv}`)}catch(e){console.warn('LB submit fail',e)}
   }
   static async get(){
     if(!C.DL_PUB)return[];
-    try{const r=await fetch(`${C.DL_BASE}/${C.DL_PUB}/json/20`);const d=await r.json();
+    try{const r=await fetch(`${C.DL_BASE}/${C.DL_PUB}/json/100`);const d=await r.json();
       if(!d.dreamlo||!d.dreamlo.leaderboard||!d.dreamlo.leaderboard.entry)return[];
       const e=d.dreamlo.leaderboard.entry;return Array.isArray(e)?e:[e];
     }catch(e){console.warn('LB get fail',e);return[];}
+  }
+  static filterToday(entries){
+    const tag='_'+LB.todayTag();
+    return entries.filter(e=>e.name&&e.name.includes(tag));
   }
 }
 
@@ -206,7 +211,7 @@ class Game{
   constructor(){
     this.cvs=$('game-canvas');this.ctx=this.cvs.getContext('2d');
     this.snd=new Snd();this.ptc=new Particles();this.chick=new Chick();
-    this.foods=[];this.score=0;this.time=0;this.running=false;this.dir=0;
+    this.foods=[];this.score=0;this.time=0;this.running=false;this.paused=false;this.dir=0;
     this.spawnTimer=0;this.spawnInt=C.SI;this.shake=0;this.prevScreen='start';
     this.username='';this.touchX=null;
     this.cvs.width=C.W;this.cvs.height=C.H;
@@ -220,7 +225,7 @@ class Game{
   }
   bindInput(){
     const keys={};
-    window.addEventListener('keydown',e=>{keys[e.key]=true;if(['ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault()});
+    window.addEventListener('keydown',e=>{keys[e.key]=true;if(['ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault();if(e.key==='p'||e.key==='P'||e.key==='Escape')this.togglePause()});
     window.addEventListener('keyup',e=>keys[e.key]=false);
     this.getDir=()=>{let d=0;if(keys['ArrowLeft']||keys['a']||keys['A'])d=-1;if(keys['ArrowRight']||keys['d']||keys['D'])d+=1;return d};
     // Touch
@@ -232,6 +237,8 @@ class Game{
   }
   bindUI(){
     $('start-btn').onclick=()=>{this.snd.init();this.username=$('username-input').value.trim()||'ひよこマスター';this.showScreen('tutorial')};
+    $('pause-btn').onclick=()=>this.togglePause();
+    const po=$('pause-overlay');if(po)po.onclick=()=>this.togglePause();
     $('tutorial-start-btn').onclick=()=>this.start();
     $('tutorial-back-btn').onclick=()=>this.showScreen('start');
     $('retry-btn').onclick=()=>this.start();
@@ -273,8 +280,8 @@ class Game{
   }
   start(){
     this.chick.reset();this.foods=[];this.score=0;this.time=0;this.spawnInt=C.SI;
-    this.spawnTimer=0;this.shake=0;this.running=true;this.touchX=null;
-    this.showScreen(null);$('hud').classList.remove('hidden');this.updateHUD();
+    this.spawnTimer=0;this.shake=0;this.running=true;this.paused=false;this.touchX=null;
+    this.showScreen(null);$('hud').classList.remove('hidden');$('pause-btn').textContent='⏸';this.updateHUD();
   }
   updateHUD(){
     $('score-value').textContent=Math.floor(this.score);
@@ -326,13 +333,28 @@ class Game{
   async showRanking(){
     this.showScreen('ranking');$('ranking-loading').classList.remove('hidden');
     $('ranking-table').classList.add('hidden');$('ranking-error').classList.add('hidden');
+    $('ranking-tabs').classList.add('hidden');
     if(!C.DL_PUB){$('ranking-loading').classList.add('hidden');
       $('ranking-error').textContent='ランキングはdreamloのAPIキー設定後に利用可能になります。';$('ranking-error').classList.remove('hidden');return}
     const entries=await LB.get();$('ranking-loading').classList.add('hidden');
     if(!entries.length){$('ranking-error').textContent='まだランキングデータがありません。';$('ranking-error').classList.remove('hidden');return}
+    this._allEntries=entries;
+    $('ranking-tabs').classList.remove('hidden');
+    this._showRankingTab('today');
+  }
+  _showRankingTab(tab){
+    $('tab-today').classList.toggle('tab-active',tab==='today');
+    $('tab-all').classList.toggle('tab-active',tab==='all');
+    const entries=tab==='today'?LB.filterToday(this._allEntries).slice(0,5):this._allEntries.slice(0,20);
     const tb=$('ranking-tbody');tb.innerHTML='';
+    if(!entries.length){
+      $('ranking-table').classList.add('hidden');
+      $('ranking-error').textContent=tab==='today'?'本日のデータはまだありません。':'まだランキングデータがありません。';
+      $('ranking-error').classList.remove('hidden');return;
+    }
+    $('ranking-error').classList.add('hidden');
     entries.forEach((e,i)=>{const tr=document.createElement('tr');
-      const dName=e.name.split('-')[0];
+      const dName=e.name.split('_')[0];
       let lvStr='-',timeStr='-';
       if(e.text){lvStr=e.text;timeStr=e.seconds?e.seconds+'秒':'-';}
       else if(e.seconds){lvStr=e.seconds;}
@@ -341,7 +363,7 @@ class Game{
   }
   update(dt){
     this.ptc.update(dt);if(this.shake>0)this.shake-=dt;
-    if(!this.running)return;
+    if(!this.running||this.paused)return;
     this.time+=dt;this.score+=10*dt;
     // input
     let dir=this.getDir();
@@ -370,10 +392,17 @@ class Game{
     this.foods.forEach(f=>f.draw(ctx));this.chick.draw(ctx);this.ptc.draw(ctx);
     ctx.restore();
   }
+  togglePause(){
+    if(!this.running)return;
+    this.paused=!this.paused;
+    $('pause-btn').textContent=this.paused?'▶':'⏸';
+    const overlay=$('pause-overlay');
+    if(overlay)overlay.classList.toggle('hidden',!this.paused);
+  }
   loop(t){
     const dt=Math.min((t-this.lastT)/1000,0.05);this.lastT=t;
     this.update(dt);this.render();
     requestAnimationFrame(t2=>this.loop(t2));
   }
 }
-window.addEventListener('DOMContentLoaded',()=>new Game());
+window.addEventListener('DOMContentLoaded',()=>{window.game=new Game();});

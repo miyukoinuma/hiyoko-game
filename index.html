@@ -50,6 +50,14 @@
 
         <!-- HUD -->
         <div id="hud" class="hidden">
+            <button id="pause-btn" class="pause-btn">⏸</button>
+            <div id="pause-overlay" class="pause-overlay hidden">
+                <div class="pause-box">
+                    <div style="font-size:48px">⏸</div>
+                    <p>ポーズ中</p>
+                    <p style="font-size:0.8rem;color:rgba(255,255,255,0.5)">もう一度タップで再開</p>
+                </div>
+            </div>
             <div id="hud-top">
                 <div id="score-display">
                     <span class="hud-label">SCORE</span>
@@ -112,7 +120,11 @@
         <!-- Rankings Screen -->
         <div id="ranking-screen" class="screen">
             <div class="screen-content ranking-content">
-                <h2>🏆 ランキング TOP 20 🏆</h2>
+                <h2>🏆 ランキング 🏆</h2>
+                <div id="ranking-tabs" class="ranking-tabs hidden">
+                    <button id="tab-today" class="tab-btn tab-active" onclick="game._showRankingTab('today')">📅 本日 TOP5</button>
+                    <button id="tab-all" class="tab-btn" onclick="game._showRankingTab('all')">👑 歴代 TOP20</button>
+                </div>
                 <div id="ranking-list-wrapper">
                     <div id="ranking-loading" class="ranking-msg">読み込み中...</div>
                     <div id="ranking-error" class="ranking-msg hidden"></div>
