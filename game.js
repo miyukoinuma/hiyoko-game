@@ -195,7 +195,7 @@ class LB{
   }
   static async get(){
     if(!C.DL_PUB)return[];
-    try{const r=await fetch(`${C.DL_BASE}/${C.DL_PUB}/json/100`);const d=await r.json();
+    try{const r=await fetch(`${C.DL_BASE}/${C.DL_PUB}/json/100`,{headers:{'Cache-Control':'no-cache'}});const d=await r.json();
       if(!d.dreamlo||!d.dreamlo.leaderboard||!d.dreamlo.leaderboard.entry)return[];
       const e=d.dreamlo.leaderboard.entry;return Array.isArray(e)?e:[e];
     }catch(e){console.warn('LB get fail',e);return[];}
