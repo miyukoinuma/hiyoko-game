@@ -354,7 +354,7 @@ class Game{
     }
     $('ranking-error').classList.add('hidden');
     entries.forEach((e,i)=>{const tr=document.createElement('tr');
-      const dName=e.name.split('_')[0];
+      const dName = e.name.includes('_') ? e.name.split('_')[0] : e.name.split('-')[0];
       let lvStr='-',timeStr='-';
       if(e.text){lvStr=e.text;timeStr=e.seconds?e.seconds+'秒':'-';}
       else if(e.seconds){lvStr=e.seconds;}
