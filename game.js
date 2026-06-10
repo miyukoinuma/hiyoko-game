@@ -196,8 +196,9 @@ class LB{
     try{const r=await fetch(`${C.API_BASE}/scores?limit=100`);return await r.json();}
     catch(e){console.warn('LB get fail',e);return[];}
   }
+  static todayISO(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0')}
   static filterToday(entries){
-    const today=LB.todayStr();
+    const today=LB.todayISO();
     return entries.filter(e=>e.created_at&&e.created_at.startsWith(today));
   }
 }
@@ -347,7 +348,7 @@ class Game{
     }
     $('ranking-error').classList.add('hidden');
     entries.forEach((e,i)=>{const tr=document.createElement('tr');
-      const dName=e.name||'-';
+      const dName=(e.name||'-').replace(/_\d{8}$/,'');
       const lvStr=e.lv||'-';
       const timeStr=e.seconds?e.seconds+'秒':'-';
       tr.innerHTML=`<td>${i+1}</td><td>${dName}</td><td>${e.score}</td><td>${lvStr}</td><td>${timeStr}</td>`;tb.appendChild(tr)});
