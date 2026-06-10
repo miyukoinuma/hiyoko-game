@@ -348,7 +348,7 @@ class Game{
     }
     $('ranking-error').classList.add('hidden');
     entries.forEach((e,i)=>{const tr=document.createElement('tr');
-      const dName=(e.name||'-').replace(/_\d{8}$/,'');
+      const dName=(e.name||'-').split('-')[0];
       const lvStr=e.lv||'-';
       const timeStr=e.seconds?e.seconds+'秒':'-';
       tr.innerHTML=`<td>${i+1}</td><td>${dName}</td><td>${e.score}</td><td>${lvStr}</td><td>${timeStr}</td>`;tb.appendChild(tr)});
