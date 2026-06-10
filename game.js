@@ -4,7 +4,7 @@ const C = {W:480,H:720,BASE:30,SPD:280,MAX_LV:20,CHKN:12,
   FOODS:{rice:{e:'🍚',g:1,p:10,s:1,w:40},grain:{e:'🌾',g:2,p:25,s:1.2,w:30},
     peach:{e:'🍑',g:3,p:50,s:1.5,w:15}},
   ROTTEN:{e:'💀',g:0,p:0,s:1.3,deadly:true},
-  DL_PUB:'6a0ad2558f40bb17b0a37437',DL_PRI:'1AB4LThCe0Wdu7T9xQhM4AFwLJxWJih0Sle5Say_59MQ',DL_BASE:'https://corsproxy.io/?http://dreamlo.com/lb'
+  API_BASE:'https://hiyoko-api.miyu-koinuma.workers.dev'
 };
 const growthNeeded=l=>{
   const baseNeed=2.8+l*1.25;
@@ -186,23 +186,19 @@ function drawBg(ctx,t){
 
 // Leaderboard API
 class LB{
-  static todayTag(){const d=new Date();return d.getFullYear().toString()+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0')}
+  static todayStr(){const d=new Date();return d.getFullYear().toString()+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0')}
   static async submit(name,score,lv,time){
-    if(!C.DL_PRI)return;
-    const cleanName=(name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName')+'_'+LB.todayTag();
-    const n=encodeURIComponent(cleanName);
-    try{await fetch(`${C.DL_BASE}/${C.DL_PRI}/add/${n}/${score}/${time}/${lv}`)}catch(e){console.warn('LB submit fail',e)}
+    const cleanName=name.replace(/[^a-zA-Z0-9\u3000-\u9FFF\u4E00-\u9FFF\uF900-\uFAFF]/g,'').slice(0,12)||'NoName';
+    try{await fetch(`${C.API_BASE}/scores`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:cleanName,score,lv,seconds:time})})}catch(e){console.warn('LB submit fail',e)}
   }
   static async get(){
-    if(!C.DL_PUB)return[];
-    try{const r=await fetch(`${C.DL_BASE}/${C.DL_PUB}/json/100`,{headers:{'Cache-Control':'no-cache'}});const d=await r.json();
-      if(!d.dreamlo||!d.dreamlo.leaderboard||!d.dreamlo.leaderboard.entry)return[];
-      const e=d.dreamlo.leaderboard.entry;return Array.isArray(e)?e:[e];
-    }catch(e){console.warn('LB get fail',e);return[];}
+    try{const r=await fetch(`${C.API_BASE}/scores?limit=100`);return await r.json();}
+    catch(e){console.warn('LB get fail',e);return[];}
   }
   static filterToday(entries){
-    const tag='_'+LB.todayTag();
-    return entries.filter(e=>e.name&&e.name.includes(tag));
+    const today=LB.todayStr();
+    return entries.filter(e=>e.created_at&&e.created_at.startsWith(today));
   }
 }
 
@@ -315,9 +311,8 @@ class Game{
     $('final-level').textContent='Lv.'+this.chick.lv;
     $('final-time').textContent=Math.floor(this.time)+'秒';
     const st=$('score-submit-status');
-    if(C.DL_PRI){st.textContent='スコア送信中...';
-      LB.submit(this.username,Math.floor(this.score),this.chick.lv,Math.floor(this.time)).then(()=>st.textContent='✅ スコア送信完了！').catch(()=>st.textContent='❌ 送信失敗')
-    }else{st.textContent=''}
+    st.textContent='スコア送信中...';
+    LB.submit(this.username,Math.floor(this.score),this.chick.lv,Math.floor(this.time)).then(()=>st.textContent='✅ スコア送信完了！').catch(()=>st.textContent='❌ 送信失敗');
     setTimeout(()=>this.showScreen('gameover'),600);
   }
   gameClear(){
@@ -325,17 +320,15 @@ class Game{
     [0,200,400,600,800].forEach(d=>setTimeout(()=>this.snd.levelUp(),d));
     $('clear-score').textContent=Math.floor(this.score);
     const st=$('clear-submit-status');
-    if(C.DL_PRI){st.textContent='スコア送信中...';
-      LB.submit(this.username,Math.floor(this.score),this.chick.lv,Math.floor(this.time)).then(()=>st.textContent='✅ スコア送信完了！').catch(()=>st.textContent='❌ 送信失敗')
-    }else{st.textContent=''}
+    st.textContent='スコア送信中...';
+    LB.submit(this.username,Math.floor(this.score),this.chick.lv,Math.floor(this.time)).then(()=>st.textContent='✅ スコア送信完了！').catch(()=>st.textContent='❌ 送信失敗');
     setTimeout(()=>this.showScreen('gameclear'),1500);
   }
   async showRanking(){
     this.showScreen('ranking');$('ranking-loading').classList.remove('hidden');
     $('ranking-table').classList.add('hidden');$('ranking-error').classList.add('hidden');
     $('ranking-tabs').classList.add('hidden');
-    if(!C.DL_PUB){$('ranking-loading').classList.add('hidden');
-      $('ranking-error').textContent='ランキングはdreamloのAPIキー設定後に利用可能になります。';$('ranking-error').classList.remove('hidden');return}
+
     const entries=await LB.get();$('ranking-loading').classList.add('hidden');
     if(!entries.length){$('ranking-error').textContent='まだランキングデータがありません。';$('ranking-error').classList.remove('hidden');return}
     this._allEntries=entries;
@@ -354,10 +347,9 @@ class Game{
     }
     $('ranking-error').classList.add('hidden');
     entries.forEach((e,i)=>{const tr=document.createElement('tr');
-      const dName = e.name.includes('_') ? e.name.split('_')[0] : e.name.split('-')[0];
-      let lvStr='-',timeStr='-';
-      if(e.text){lvStr=e.text;timeStr=e.seconds?e.seconds+'秒':'-';}
-      else if(e.seconds){lvStr=e.seconds;}
+      const dName=e.name||'-';
+      const lvStr=e.lv||'-';
+      const timeStr=e.seconds?e.seconds+'秒':'-';
       tr.innerHTML=`<td>${i+1}</td><td>${dName}</td><td>${e.score}</td><td>${lvStr}</td><td>${timeStr}</td>`;tb.appendChild(tr)});
     $('ranking-table').classList.remove('hidden');
   }
