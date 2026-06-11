@@ -514,6 +514,7 @@ html, body {
     z-index: 7;
     backdrop-filter: blur(4px);
     cursor: pointer;
+    pointer-events: auto;
 }
 .pause-box {
     text-align: center;
