@@ -76,7 +76,7 @@ function getChickCache(isAdult){
 }
 class Chick{
   constructor(){this.reset()}
-  reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0}
+  reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0;this.maxSizeReached=false}
   get w(){return this.sz*(1+this.lv*0.64)}
   update(dt,dir){
     this.x+=dir*C.SPD*dt;
@@ -86,6 +86,7 @@ class Chick{
     if(this.pulse>0)this.pulse-=dt*3;
   }
   addGrowth(g,snd){
+    if(this.maxSizeReached)return false;
     this.growth+=g;const need=growthNeeded(this.lv);
     if(this.growth>=need){this.growth-=need;this.lv++;this.pulse=1;snd.levelUp();return true}
     return false;
@@ -283,7 +284,8 @@ class Game{
   updateHUD(){
     $('score-value').textContent=Math.floor(this.score);
     const emoji=this.chick.lv>=C.CHKN?'🐔':this.chick.lv>=8?'🐥':'🐤';
-    $('level-text').textContent=`Lv.${this.chick.lv} ${emoji}`;
+    const levelDisplay=this.chick.maxSizeReached?'∞':this.chick.lv;
+    $('level-text').textContent=`Lv.${levelDisplay} ${emoji}`;
     const pct=Math.min(100,this.chick.growth/growthNeeded(this.chick.lv)*100);
     $('growth-bar').style.width=pct+'%';
   }
@@ -362,7 +364,7 @@ class Game{
     let dir=this.getDir();
     if(this.touchX!==null){const diff=this.touchX-this.chick.x;dir=diff>10?1:diff<-10?-1:0}
     this.chick.update(dt,dir);
-    if(this.chick.w>=C.W){this.gameClear();return;}
+    if(this.chick.w>=C.W){this.chick.maxSizeReached=true;}
     // spawn
     this.spawnTimer+=dt*1000;if(this.spawnTimer>=this.spawnInt){this.spawnTimer=0;this.spawnFood();
       this.spawnInt=Math.max(C.SI_MIN,this.spawnInt*0.998)}
@@ -371,7 +373,7 @@ class Game{
     this.foods=this.foods.filter(f=>{
       if(f.dead)return false;
       if(this.checkCollision(f)){
-        if(f.type.deadly){this.ptc.emit(f.x,f.y,'#00ff00',15);this.gameOver();return false}
+        if(f.type.deadly){this.ptc.emit(f.x,f.y,'#00ff00',15);if(this.chick.maxSizeReached){this.gameClear()}else{this.gameOver()};return false}
         this.score+=f.type.p*this.chick.lv;
         if(this.chick.addGrowth(f.type.g,this.snd)){this.score+=this.chick.lv*200;}
         this.snd.eat();this.ptc.emit(f.x,f.y,'#FFD600',10);this.updateHUD();return false;
