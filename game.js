@@ -308,7 +308,7 @@ class Game{
   }
   spawnFood(){
     const lv=this.chick.lv;let type;const specRoll=Math.random();
-    if(specRoll<0.015){type=C.MAGNET}else if(specRoll<0.04){type=C.MEDICINE}else{
+    if(specRoll<0.015){type=C.MAGNET}else if(specRoll<0.025){type=C.MEDICINE}else{
       const rotChance=Math.min(0.35,C.ROT0+C.ROT_INC*lv);
       if(Math.random()<rotChance){type=C.ROTTEN}else{
         const r=Math.random()*85,foods=Object.values(C.FOODS);let cum=0;type=foods[0];
