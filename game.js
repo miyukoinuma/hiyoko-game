@@ -4,6 +4,8 @@ const C = {W:480,H:720,BASE:30,SPD:280,MAX_LV:20,CHKN:12,
   FOODS:{rice:{e:'🍚',g:1,p:10,s:1,w:40},grain:{e:'🌾',g:2,p:25,s:1.2,w:30},
     peach:{e:'🍑',g:3,p:50,s:1.5,w:15}},
   ROTTEN:{e:'💀',g:0,p:0,s:1.3,deadly:true},
+  MAGNET:{e:'🧲',g:0,p:30,s:1.8,special:'magnet'},
+  MEDICINE:{e:'💊',g:0,p:20,s:1.6,special:'barrier'},
   API_BASE:'https://hiyoko-api.miyu-koinuma.workers.dev'
 };
 const growthNeeded=l=>{
@@ -26,6 +28,8 @@ class Snd{
   eat(){this.play(880,0.1);setTimeout(()=>this.play(1100,0.1),60)}
   levelUp(){[0,100,200,300].forEach((d,i)=>setTimeout(()=>this.play(440*(1+i*0.2),0.15),d))}
   die(){this.play(300,0.3,'sawtooth',0.1);setTimeout(()=>this.play(200,0.4,'sawtooth',0.1),200)}
+  powerup(){this.play(660,0.1);setTimeout(()=>this.play(880,0.1),80);setTimeout(()=>this.play(1100,0.15),160)}
+  shield(){this.play(500,0.15,'triangle',0.12);setTimeout(()=>this.play(700,0.2,'triangle',0.1),100)}
 }
 
 // Particles
@@ -54,10 +58,14 @@ function getFoodCache(type,sz){
 
 class Food{
   constructor(type,x,sp){this.type=type;this.x=x;this.y=-30;this.sp=sp;
-    this.sz=type.deadly?28:24;this.rot=0;this.dead=false}
+    this.sz=type.deadly?28:type.special?30:24;this.rot=0;this.dead=false}
   update(dt){this.y+=this.sp*dt;this.rot+=dt*2;if(this.y>C.H+40)this.dead=true}
   draw(ctx){ctx.save();ctx.translate(this.x,this.y);ctx.rotate(Math.sin(this.rot)*0.2);
     const cache=getFoodCache(this.type,this.sz);
+    if(this.type.special){ctx.globalAlpha=0.3+Math.sin(this.rot*3)*0.2;
+      const gc=this.type.special==='magnet'?'#FF4444':'#00CCFF';
+      ctx.fillStyle=gc;ctx.beginPath();ctx.arc(0,0,this.sz*0.9,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;ctx.shadowColor=gc;ctx.shadowBlur=12}
     ctx.drawImage(cache,-this.sz*1.25,-this.sz*1.25);
     if(this.type.deadly){ctx.globalAlpha=0.3+Math.sin(this.rot*3)*0.15;
       ctx.fillStyle='#00ff00';ctx.beginPath();ctx.arc(0,0,this.sz*0.6,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
@@ -76,7 +84,7 @@ function getChickCache(isAdult){
 }
 class Chick{
   constructor(){this.reset()}
-  reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0;this.maxSizeReached=false}
+  reset(){this.x=C.W/2;this.y=C.H-80;this.lv=1;this.growth=0;this.sz=C.BASE;this.bob=0;this.pulse=0;this.maxSizeReached=false;this.barrier=0}
   get w(){return this.sz*(1+this.lv*0.64)}
   update(dt,dir){
     this.x+=dir*C.SPD*dt;
@@ -97,6 +105,15 @@ class Chick{
     const scale=(s*px)/100;ctx.scale(scale,scale);
     ctx.drawImage(cache,-80,-80);
     ctx.restore();
+    if(this.barrier>0){ctx.save();ctx.translate(this.x,this.y);
+      ctx.globalAlpha=0.25+Math.sin(Date.now()/200)*0.1;
+      const sr=s*px*0.7,gr=ctx.createRadialGradient(0,0,sr*0.4,0,0,sr);
+      gr.addColorStop(0,'rgba(0,200,255,0)');gr.addColorStop(0.7,'rgba(0,200,255,0.35)');gr.addColorStop(1,'rgba(0,200,255,0)');
+      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(0,0,sr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(0,200,255,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+      ctx.beginPath();ctx.arc(0,0,sr*0.93,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      ctx.globalAlpha=0.9;ctx.fillStyle='#fff';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+      ctx.fillText('💊×'+this.barrier,0,-sr-8);ctx.restore()}
   }
   drawBaby(ctx,s){
     const r=s/2;
@@ -210,7 +227,7 @@ class Game{
     this.cvs=$('game-canvas');this.ctx=this.cvs.getContext('2d');
     this.snd=new Snd();this.ptc=new Particles();this.chick=new Chick();
     this.foods=[];this.score=0;this.time=0;this.running=false;this.paused=false;this.dir=0;
-    this.spawnTimer=0;this.spawnInt=C.SI;this.shake=0;this.prevScreen='start';
+    this.spawnTimer=0;this.spawnInt=C.SI;this.shake=0;this.prevScreen='start';this.magnetTimer=0;
     this.username='';this.touchX=null;
     this.cvs.width=C.W;this.cvs.height=C.H;
     this.resize();window.addEventListener('resize',()=>this.resize());
@@ -278,7 +295,7 @@ class Game{
   }
   start(){
     this.chick.reset();this.foods=[];this.score=0;this.time=0;this.spawnInt=C.SI;
-    this.spawnTimer=0;this.shake=0;this.running=true;this.paused=false;this.touchX=null;
+    this.spawnTimer=0;this.shake=0;this.running=true;this.paused=false;this.touchX=null;this.magnetTimer=0;
     this.showScreen(null);$('hud').classList.remove('hidden');$('pause-btn').textContent='⏸';this.updateHUD();
   }
   updateHUD(){
@@ -290,12 +307,13 @@ class Game{
     $('growth-bar').style.width=pct+'%';
   }
   spawnFood(){
-    const lv=this.chick.lv,rotChance=Math.min(0.35,C.ROT0+C.ROT_INC*lv);
-    const isRotten=Math.random()<rotChance;
-    let type;
-    if(isRotten){type=C.ROTTEN}else{
-      const r=Math.random()*85,foods=Object.values(C.FOODS);let cum=0;type=foods[0];
-      for(const f of foods){cum+=f.w;if(r<=cum){type=f;break}}
+    const lv=this.chick.lv;let type;const specRoll=Math.random();
+    if(specRoll<0.015){type=C.MAGNET}else if(specRoll<0.04){type=C.MEDICINE}else{
+      const rotChance=Math.min(0.35,C.ROT0+C.ROT_INC*lv);
+      if(Math.random()<rotChance){type=C.ROTTEN}else{
+        const r=Math.random()*85,foods=Object.values(C.FOODS);let cum=0;type=foods[0];
+        for(const f of foods){cum+=f.w;if(r<=cum){type=f;break}}
+      }
     }
     const margin=30,x=margin+Math.random()*(C.W-margin*2);
     const sp=(C.FSPD+lv*6)*type.s;
@@ -360,6 +378,7 @@ class Game{
     this.ptc.update(dt);if(this.shake>0)this.shake-=dt;
     if(!this.running||this.paused)return;
     this.time+=dt;this.score+=10*dt;
+    if(this.magnetTimer>0)this.magnetTimer-=dt;
     // input
     let dir=this.getDir();
     if(this.touchX!==null){const diff=this.touchX-this.chick.x;dir=diff>10?1:diff<-10?-1:0}
@@ -368,12 +387,24 @@ class Game{
     // spawn
     this.spawnTimer+=dt*1000;if(this.spawnTimer>=this.spawnInt){this.spawnTimer=0;this.spawnFood();
       this.spawnInt=Math.max(C.SI_MIN,this.spawnInt*0.998)}
+    // magnet attraction
+    if(this.magnetTimer>0){this.foods.forEach(f=>{if(!f.type.deadly&&!f.type.special){
+      const dx=this.chick.x-f.x,dy=this.chick.y-f.y,dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist>5){const pull=280*dt;f.x+=dx/dist*pull;f.y+=dy/dist*pull}}});}
     // food
     this.foods.forEach(f=>f.update(dt));
     this.foods=this.foods.filter(f=>{
       if(f.dead)return false;
       if(this.checkCollision(f)){
-        if(f.type.deadly){this.ptc.emit(f.x,f.y,'#00ff00',15);if(this.chick.maxSizeReached){this.gameClear()}else{this.gameOver()};return false}
+        if(f.type.special){
+          if(f.type.special==='magnet'){this.magnetTimer=3;this.snd.powerup();this.ptc.emit(f.x,f.y,'#FF4444',12)}
+          else if(f.type.special==='barrier'){this.chick.barrier++;this.snd.shield();this.ptc.emit(f.x,f.y,'#00CCFF',12)}
+          this.score+=f.type.p*this.chick.lv;this.updateHUD();return false;
+        }
+        if(f.type.deadly){this.ptc.emit(f.x,f.y,'#00ff00',15);
+          if(this.chick.maxSizeReached){this.gameClear()}
+          else if(this.chick.barrier>0){this.chick.barrier--;this.snd.shield();this.shake=0.2;this.ptc.emit(this.chick.x,this.chick.y,'#00CCFF',20)}
+          else{this.gameOver()};return false}
         this.score+=f.type.p*this.chick.lv;
         if(this.chick.addGrowth(f.type.g,this.snd)){this.score+=this.chick.lv*200;}
         this.snd.eat();this.ptc.emit(f.x,f.y,'#FFD600',10);this.updateHUD();return false;
@@ -385,6 +416,12 @@ class Game{
     if(this.shake>0){const s=this.shake*8;ctx.translate(Math.random()*s-s/2,Math.random()*s-s/2)}
     drawBg(ctx,this.time);
     this.foods.forEach(f=>f.draw(ctx));this.chick.draw(ctx);this.ptc.draw(ctx);
+    if(this.magnetTimer>0){ctx.save();ctx.globalAlpha=0.15+Math.sin(Date.now()/150)*0.08;
+      const mg=ctx.createRadialGradient(this.chick.x,this.chick.y,20,this.chick.x,this.chick.y,180);
+      mg.addColorStop(0,'rgba(255,50,50,0.4)');mg.addColorStop(0.5,'rgba(255,100,50,0.15)');mg.addColorStop(1,'rgba(255,50,50,0)');
+      ctx.fillStyle=mg;ctx.beginPath();ctx.arc(this.chick.x,this.chick.y,180,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=0.9;ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';
+      ctx.fillText('\u{1F9F2} '+Math.ceil(this.magnetTimer)+'s',this.chick.x,this.chick.y-this.chick.w*0.7-22);ctx.restore()}
     ctx.restore();
   }
   togglePause(){
